@@ -27,7 +27,12 @@ def main():
     print('Start to Copy...')
     # Call the Drive v3 API
     clone_folder = '14JXKLEVq4cHOCuNsBnZGKEOrp8DvIba8'
-    clone_folder_files = get_clone_files(service=drive_service, folder_id=clone_folder)
+    clone_folder_files = get_files(service=drive_service, folder_id=clone_folder)
+
+    print('Need to Clone Files:')
+    for item in clone_folder_files:
+        print(u'{0} ({1})'.format(item['name'], item['id']))
+
     clone_folder_name = get_folder_name(service=drive_service, folder_id=clone_folder)
     folder_id = get_user_folder(service=drive_service, folder_name=clone_folder_name)
     copy_files(service=drive_service, to_folder=folder_id, files=clone_folder_files)
@@ -45,8 +50,8 @@ def create_folder(service, name):
     return response.get('id', None)
 
 
-def get_clone_files(service, folder_id):
-    print('Get clone files...')
+def get_files(service, folder_id):
+    print('Get files...')
     query = "'" + folder_id + "' in parents"
 
     items = []
@@ -62,11 +67,8 @@ def get_clone_files(service, folder_id):
             break
 
     if not items:
-        print('Get clone files...Done. No files found.')
+        print('Get files...Done. No files found.')
     else:
-        print('Files:')
-        for item in items:
-            print(u'{0} ({1})'.format(item['name'], item['id']))
         print('Get clone files...Done.')
 
     return items
@@ -104,22 +106,38 @@ def get_user_folder(service, folder_name):
 
 def copy_files(service, to_folder, files):
     print('Copy Files...')
-    for file in files:
-        file_name = file['name']
-        file_id = file['id']
-        file_metadata = {
-            'name': file_name,
-            'parents': [to_folder]
-        }
+    user_folder_files = get_files(service=service, folder_id=to_folder)
 
-        try:
-            service.files().copy(fileId=file_id, body=file_metadata).execute()
-            print('Copy Files...Copy: {0}'.format(file_name))
-        except HttpError as err:
-            content = json.loads(err.content)
-            print('Unexpected error: {0}'.format(content))
-            break
+    print('User Files:')
+    for item in user_folder_files:
+        print(u'{0} ({1})'.format(item['name'], item['id']))
+
+    for file in files:
+        if not check_file(user_files=user_folder_files, copy_file=file):
+            file_name = file['name']
+            file_id = file['id']
+            file_metadata = {
+                'name': file_name,
+                'parents': [to_folder]
+            }
+
+            try:
+                service.files().copy(fileId=file_id, body=file_metadata).execute()
+                print('Copy Files...Copy: {0}'.format(file_name))
+            except HttpError as err:
+                content = json.loads(err.content)
+                print('Unexpected error: {0}'.format(content))
+                break
     print('Copy Files...Done.')
+
+
+def check_file(user_files, copy_file):
+    result = False
+    for file in user_files:
+        if file['name'] == copy_file['name']:
+            print('Checking file...{0} is exist'.format(file['name']))
+            result = True
+    return result
 
 
 if __name__ == '__main__':
