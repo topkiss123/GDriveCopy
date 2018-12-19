@@ -9,6 +9,7 @@ import json
 # If modifying these scopes, delete the file token.json.
 SCOPES = 'https://www.googleapis.com/auth/drive'
 
+
 def main():
     """Shows basic usage of the Drive v3 API.
     Prints the names and ids of the first 10 files the user has access to.
@@ -26,15 +27,14 @@ def main():
     print('Start to Copy...')
     # Call the Drive v3 API
     clone_folder = '14JXKLEVq4cHOCuNsBnZGKEOrp8DvIba8'
-    clone_folder_files = get_clone_files(service=drive_service, floder_id=clone_folder)
-    clone_folder_name = get_folder_name(service=drive_service, floder_id=clone_folder)
-    folder_id = create_folder(service=drive_service, name=clone_folder_name)
+    clone_folder_files = get_clone_files(service=drive_service, folder_id=clone_folder)
+    clone_folder_name = get_folder_name(service=drive_service, folder_id=clone_folder)
+    folder_id = get_user_folder(service=drive_service, folder_name=clone_folder_name)
     copy_files(service=drive_service, to_folder=folder_id, files=clone_folder_files)
     print('Copy done...')
 
 
 def create_folder(service, name):
-    # Can check folder first, make function better
     print('Create folder...')
     file_metadata = {
         'name': name,
@@ -45,9 +45,9 @@ def create_folder(service, name):
     return response.get('id', None)
 
 
-def get_clone_files(service, floder_id):
+def get_clone_files(service, folder_id):
     print('Get clone files...')
-    query = "'" + floder_id + "' in parents"
+    query = "'" + folder_id + "' in parents"
 
     items = []
     next_page_token = None
@@ -72,9 +72,9 @@ def get_clone_files(service, floder_id):
     return items
 
 
-def get_folder_name(service, floder_id):
+def get_folder_name(service, folder_id):
     print('Get folder name...')
-    response = service.files().get(fileId=floder_id).execute()
+    response = service.files().get(fileId=folder_id).execute()
     if 'name' in response:
         folder_name = response['name'] + '_byGDriveCopy'
         print('Get folder name...Done. Name: {0}'.format(folder_name))
@@ -83,6 +83,23 @@ def get_folder_name(service, floder_id):
         folder_name = 'Copy_byGDriveCopy' + time.strftime("%Y-%m-%d", time.localtime())
         print('Get folder name...Done. Name: {0}'.format(folder_name))
         return folder_name
+
+
+def get_user_folder(service, folder_name):
+    print('Get user folder...')
+    query = "name='" + folder_name + "'and trashed=false"
+    response = service.files().list(orderBy='folder', q=query, fields="files(id, name)").execute()
+    result = response.get('files', [])
+    if not result:
+        print('Get user folder...Done.')
+        return create_folder(service=service, name=folder_name)
+    else:
+        if 'id' in result[0]:
+            print('Get user folder...Done.')
+            return result[0]['id']
+        else:
+            print('Get user folder...Done.')
+            return create_folder(service=service, name=folder_name)
 
 
 def copy_files(service, to_folder, files):
