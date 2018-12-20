@@ -69,7 +69,7 @@ def get_files(service, folder_id):
     if not items:
         print('Get files...Done. No files found.')
     else:
-        print('Get clone files...Done.')
+        print('Get files...Done.')
 
     return items
 
@@ -122,6 +122,7 @@ def copy_files(service, to_folder, files):
             }
 
             try:
+                time.sleep(1)
                 service.files().copy(fileId=file_id, body=file_metadata).execute()
                 print('Copy Files...Copy: {0}'.format(file_name))
             except HttpError as err:
