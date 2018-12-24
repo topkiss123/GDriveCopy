@@ -6,36 +6,47 @@ from oauth2client import file, client, tools
 import time
 import json
 
-# If modifying these scopes, delete the file token.json.
 SCOPES = 'https://www.googleapis.com/auth/drive'
+on_hit = False
 
 
 def main():
-    """Shows basic usage of the Drive v3 API.
-    Prints the names and ids of the first 10 files the user has access to.
-    """
-    # The file token.json stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first
-    # time.
+    drive_service = authorize(credentials='credentials.json')
+    if drive_service:
+        clone_folder = '1P6vBeOmx3H_DCA1RxLAwRB1B8-8omlEA'
+        start_copy(service=drive_service, folder_id=clone_folder)
+
+
+def authorize(credentials):
     print('Start to check authorize...')
     store = file.Storage('token.json')
     creds = store.get()
     if not creds or creds.invalid:
-        flow = client.flow_from_clientsecrets('credentials.json', SCOPES)
-        creds = tools.run_flow(flow, store)
-    drive_service = build('drive', 'v3', http=creds.authorize(Http()))
+        try:
+            flow = client.flow_from_clientsecrets(credentials, SCOPES)
+            creds = tools.run_flow(flow, store)
+        except:
+            print('Authorize Fail...')
+    if creds:
+        service = build('drive', 'v3', http=creds.authorize(Http()))
+        if service:
+            print('Authorize Success...')
+            return service
+
+    return None
+
+
+def start_copy(service, folder_id):
     print('Start to Copy...')
-    # Call the Drive v3 API
-    clone_folder = '14JXKLEVq4cHOCuNsBnZGKEOrp8DvIba8'
-    clone_folder_files = get_files(service=drive_service, folder_id=clone_folder)
+    clone_folder_files = get_files(service=service, folder_id=folder_id)
 
     print('Need to Clone Files:')
     for item in clone_folder_files:
         print(u'{0} ({1})'.format(item['name'], item['id']))
 
-    clone_folder_name = get_folder_name(service=drive_service, folder_id=clone_folder)
-    folder_id = get_user_folder(service=drive_service, folder_name=clone_folder_name)
-    copy_files(service=drive_service, to_folder=folder_id, files=clone_folder_files)
+    clone_folder_name = get_folder_name(service=service, folder_id=folder_id)
+    folder_id = get_user_folder(service=service, folder_name=clone_folder_name)
+    copy_files(service=service, to_folder=folder_id, files=clone_folder_files)
     print('Copy done...')
 
 
@@ -69,7 +80,7 @@ def get_files(service, folder_id):
     if not items:
         print('Get files...Done. No files found.')
     else:
-        print('Get clone files...Done.')
+        print('Get files...Done.')
 
     return items
 
@@ -122,6 +133,7 @@ def copy_files(service, to_folder, files):
             }
 
             try:
+                time.sleep(1)
                 service.files().copy(fileId=file_id, body=file_metadata).execute()
                 print('Copy Files...Copy: {0}'.format(file_name))
             except HttpError as err:
