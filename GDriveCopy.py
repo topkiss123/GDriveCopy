@@ -3,10 +3,11 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from httplib2 import Http
 from oauth2client import file, client, tools
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import pyqtSlot
 from mainwindow import Ui_MainWindow
+from enum import Enum, unique, auto
 import time
 import json
 import sys
@@ -174,40 +175,85 @@ def check_file(user_files, copy_file, log_callback=None):
     return result
 
 
+@unique
+class ActionType(Enum):
+    Authorize = auto()
+    Copy = auto()
+
+
+class WorkThread(QtCore.QThread):
+
+    authorize_signal = QtCore.pyqtSignal(object)
+    log_signal = QtCore.pyqtSignal(str)
+
+    def __init__(self):
+        super(WorkThread, self).__init__()
+        self.service = None
+        self.folder_id = None
+        self.credentials = None
+        self.action_type = None
+
+    def __del__(self):
+        self.wait()
+
+    def authorize(self, credentials):
+        self.action_type = ActionType.Authorize
+        self.credentials = credentials
+        self.start()
+
+    def start_copy(self, service, folder_id):
+        self.action_type = ActionType.Copy
+        self.service = service
+        self.folder_id = folder_id
+        self.start()
+
+    def run(self):
+        if self.action_type == ActionType.Authorize:
+            drive_service = authorize(credentials=self.credentials, log_callback=self.callback)
+            self.authorize_signal.emit(drive_service)
+        elif self.action_type == ActionType.Copy:
+            if self.service:
+                if self.folder_id:
+                    start_copy(service=self.service, folder_id=self.folder_id, log_callback=self.callback)
+                else:
+                    self.callback('NOTICE: Folder Id is empty...')
+
+    def callback(self, log_string):
+        self.log_signal.emit(log_string)
+
+
 class App(QtWidgets.QMainWindow):
-    main_window = None
-    drive_service = None
 
     def __init__(self):
         super().__init__()
-        global main_window
-        main_window = Ui_MainWindow()
-        main_window.setupUi(self)
-        main_window.copy.setEnabled(False)
+        self.work_thread = WorkThread()
+        self.work_thread.log_signal.connect(self.log_callback)
+        self.work_thread.authorize_signal.connect(self.authorize_callback)
+        self.main_window = Ui_MainWindow()
+        self.main_window.setupUi(self)
+        self.main_window.copy.setEnabled(False)
+        self.drive_service = None
         self.show()
 
-    @staticmethod
-    def log_callback(log_string):
+    def log_callback(self, log_string):
         print(log_string)
-        main_window.textBrowser.append(log_string)
+        self.main_window.textBrowser.append(log_string)
+
+    def authorize_callback(self, service):
+        self.drive_service = service
+        if self.drive_service:
+            self.main_window.copy.setEnabled(True)
+        else:
+            self.main_window.copy.setEnabled(False)
 
     @pyqtSlot()
     def authorize_clicked(self):
-        global drive_service
-        drive_service = authorize(credentials='credentials.json', log_callback=self.log_callback)
-        if drive_service:
-            main_window.copy.setEnabled(True)
-        else:
-            main_window.copy.setEnabled(False)
+        self.work_thread.authorize('credentials.json')
 
     @pyqtSlot()
     def copy_clicked(self):
-        if drive_service:
-            clone_folder = main_window.textEdit.toPlainText()
-            if clone_folder:
-                start_copy(service=drive_service, folder_id=clone_folder, log_callback=self.log_callback)
-            else:
-                self.log_callback('NOTICE: Folder Id is empty...')
+        clone_folder = self.main_window.textEdit.toPlainText()
+        self.work_thread.start_copy(self.drive_service, clone_folder)
 
 
 if __name__ == '__main__':
