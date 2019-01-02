@@ -26,83 +26,128 @@
      <verstretch>0</verstretch>
     </sizepolicy>
    </property>
-   <layout class="QGridLayout" name="gridLayout">
-    <item row="1" column="0">
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_3">
-        <item>
-         <spacer name="horizontalSpacer">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QPushButton" name="authorize">
-          <property name="text">
-           <string>Authorize</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="copy">
-          <property name="text">
-           <string>Start Copy</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-       </layout>
-      </item>
-     </layout>
-    </item>
-    <item row="0" column="0">
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <item>
-       <widget class="QLabel" name="folder_label">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <layout class="QGridLayout" name="gridLayout_2" columnstretch="0,0,0" rowminimumheight="0,0,0" columnminimumwidth="0,0,0">
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="horizontalSpacing">
+       <number>-1</number>
+      </property>
+      <item row="0" column="2">
+       <widget class="QPushButton" name="file_browser">
         <property name="text">
-         <string>Folder ID</string>
+         <string>Browser</string>
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QTextEdit" name="textEdit">
+      <item row="0" column="0">
+       <widget class="QLabel" name="credentials_label">
+        <property name="text">
+         <string>Credentials :</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="folder_label">
+        <property name="text">
+         <string>Folder ID :</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QPlainTextEdit" name="folder_id">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Ignored">
+         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="sizeIncrement">
+        <property name="maximumSize">
          <size>
-          <width>0</width>
-          <height>0</height>
+          <width>16777215</width>
+          <height>25</height>
          </size>
+        </property>
+        <property name="acceptDrops">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QPlainTextEdit" name="credentials_path">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="acceptDrops">
+         <bool>false</bool>
         </property>
        </widget>
       </item>
      </layout>
     </item>
-    <item row="2" column="0">
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="authorize">
+        <property name="text">
+         <string>Authorize</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="copy">
+        <property name="text">
+         <string>Start Copy</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="clear">
+        <property name="text">
+         <string>Clear</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </item>
+    <item>
      <widget class="QTextBrowser" name="textBrowser"/>
     </item>
    </layout>
@@ -117,8 +162,8 @@
    <slot>authorize_clicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>173</x>
-     <y>307</y>
+     <x>281</x>
+     <y>121</y>
     </hint>
     <hint type="destinationlabel">
      <x>156</x>
@@ -133,8 +178,8 @@
    <slot>copy_clicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>298</x>
-     <y>307</y>
+     <x>391</x>
+     <y>121</y>
     </hint>
     <hint type="destinationlabel">
      <x>256</x>
@@ -142,10 +187,43 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>clear</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>clear_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>446</x>
+     <y>106</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>531</x>
+     <y>51</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>file_browser</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>browser_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>584</x>
+     <y>22</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>594</x>
+     <y>102</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
-  <signal>clicked()</signal>
   <slot>authorize_clicked()</slot>
   <slot>copy_clicked()</slot>
+  <slot>clear_clicked()</slot>
+  <slot>browser_clicked()</slot>
  </slots>
 </ui>

@@ -4,13 +4,14 @@ from googleapiclient.errors import HttpError
 from httplib2 import Http
 from oauth2client import file, client, tools
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QFileDialog
 from PyQt5.QtCore import pyqtSlot
 from mainwindow import Ui_MainWindow
 from enum import Enum, unique, auto
 import time
 import json
 import sys
+import os
 
 SCOPES = 'https://www.googleapis.com/auth/drive'
 
@@ -113,7 +114,8 @@ def get_folder_name(service, folder_id, log_callback=None):
 def get_user_folder(service, folder_name, log_callback=None):
     if log_callback:
         log_callback('Get user folder...')
-    query = "name='" + folder_name + "'and trashed=false"
+    query_name = '"' + folder_name + '"'
+    query = "name=" + query_name + "and trashed=false"
     response = service.files().list(orderBy='folder', q=query, fields="files(id, name)").execute()
     result = response.get('files', [])
     if not result:
@@ -232,7 +234,9 @@ class App(QtWidgets.QMainWindow):
         self.main_window = Ui_MainWindow()
         self.main_window.setupUi(self)
         self.main_window.copy.setEnabled(False)
+        self.main_window.authorize.setEnabled(False)
         self.drive_service = None
+        self.credentials = None
         self.show()
 
     def log_callback(self, log_string):
@@ -248,12 +252,29 @@ class App(QtWidgets.QMainWindow):
 
     @pyqtSlot()
     def authorize_clicked(self):
-        self.work_thread.authorize('credentials.json')
+        self.work_thread.authorize(self.credentials)
 
     @pyqtSlot()
     def copy_clicked(self):
-        clone_folder = self.main_window.textEdit.toPlainText()
+        clone_folder = self.main_window.folder_id.toPlainText()
         self.work_thread.start_copy(self.drive_service, clone_folder)
+
+    @pyqtSlot()
+    def clear_clicked(self):
+        self.main_window.textBrowser.setPlainText('')
+
+    @pyqtSlot()
+    def browser_clicked(self):
+        dialog = QFileDialog()
+        options = dialog.Options()
+        file_path, _ = QFileDialog.getOpenFileName(dialog, '', '', 'JSON (*.json)', options=options)
+        if file_path:
+            self.main_window.credentials_path.setPlainText(file_path)
+            _, self.credentials = os.path.split(file_path)
+            if self.credentials:
+                self.main_window.authorize.setEnabled(True)
+            else:
+                self.main_window.authorize.setEnabled(False)
 
 
 if __name__ == '__main__':
