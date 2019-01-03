@@ -12,6 +12,7 @@ import time
 import json
 import sys
 import os
+import configparser
 
 SCOPES = 'https://www.googleapis.com/auth/drive'
 
@@ -154,7 +155,7 @@ def copy_files(service, to_folder, files, log_callback=None):
             }
 
             try:
-                time.sleep(1)
+                time.sleep(0.5)
                 service.files().copy(fileId=file_id, body=file_metadata).execute()
                 if log_callback:
                     log_callback('Copy Files...Copy: {0}'.format(file_name))
@@ -237,7 +238,48 @@ class App(QtWidgets.QMainWindow):
         self.main_window.authorize.setEnabled(False)
         self.drive_service = None
         self.credentials = None
+        self._file_path = None
+        self.saved_folder = None
+        self.config = configparser.ConfigParser()
+        self.restore_value()
         self.show()
+
+    @property
+    def file_path(self):
+        return self._file_path
+
+    @file_path.setter
+    def file_path(self, path):
+        if path:
+            self._file_path = path
+            self.set_path_config(self._file_path)
+            self.main_window.credentials_path.setPlainText(self._file_path)
+            _, self.credentials = os.path.split(self._file_path)
+            if self.credentials:
+                self.main_window.authorize.setEnabled(True)
+            else:
+                self.main_window.authorize.setEnabled(False)
+
+    def set_path_config(self, path):
+        if 'SETTING' not in self.config:
+            self.config['SETTING'] = {}
+        self.config['SETTING']['Path'] = path
+        with open('GDriveCopy.ini', 'w') as configfile:
+            self.config.write(configfile)
+
+    def set_folder_config(self, folder):
+        if 'SETTING' not in self.config:
+            self.config['SETTING'] = {}
+        self.config['SETTING']['Folder'] = folder
+        with open('GDriveCopy.ini', 'w') as configfile:
+            self.config.write(configfile)
+
+    def restore_value(self):
+        self.config.read('GDriveCopy.ini')
+        if 'SETTING' in self.config:
+            self.file_path = self.config['SETTING']['Path']
+            if 'Folder' in self.config['SETTING']:
+                self.main_window.folder_id.setPlainText(self.config['SETTING']['Folder'])
 
     def log_callback(self, log_string):
         print(log_string)
@@ -257,6 +299,7 @@ class App(QtWidgets.QMainWindow):
     @pyqtSlot()
     def copy_clicked(self):
         clone_folder = self.main_window.folder_id.toPlainText()
+        self.set_folder_config(clone_folder)
         self.work_thread.start_copy(self.drive_service, clone_folder)
 
     @pyqtSlot()
@@ -267,14 +310,14 @@ class App(QtWidgets.QMainWindow):
     def browser_clicked(self):
         dialog = QFileDialog()
         options = dialog.Options()
-        file_path, _ = QFileDialog.getOpenFileName(dialog, '', '', 'JSON (*.json)', options=options)
-        if file_path:
-            self.main_window.credentials_path.setPlainText(file_path)
-            _, self.credentials = os.path.split(file_path)
-            if self.credentials:
-                self.main_window.authorize.setEnabled(True)
-            else:
-                self.main_window.authorize.setEnabled(False)
+        self.file_path, _ = QFileDialog.getOpenFileName(dialog, '', '', 'JSON (*.json)', options=options)
+        # if file_path:
+        #     self.main_window.credentials_path.setPlainText(file_path)
+        #     _, self.credentials = os.path.split(file_path)
+        #     if self.credentials:
+        #         self.main_window.authorize.setEnabled(True)
+        #     else:
+        #         self.main_window.authorize.setEnabled(False)
 
 
 if __name__ == '__main__':
