@@ -9,6 +9,7 @@ verify_ssl = true
 google-api-python-client = "*"
 oauth2client = "*"
 pyqt5 = "*"
+pyqt5-sip = "*"
 
 [requires]
 python_version = "3.7"
