@@ -254,7 +254,8 @@ class App(QtWidgets.QMainWindow):
             self._file_path = path
             self.set_path_config(self._file_path)
             self.main_window.credentials_path.setPlainText(self._file_path)
-            _, self.credentials = os.path.split(self._file_path)
+            # _, self.credentials = os.path.split(self._file_path)
+            self.credentials = self._file_path
             if self.credentials:
                 self.main_window.authorize.setEnabled(True)
             else:
@@ -310,14 +311,7 @@ class App(QtWidgets.QMainWindow):
     def browser_clicked(self):
         dialog = QFileDialog()
         options = dialog.Options()
-        self.file_path, _ = QFileDialog.getOpenFileName(dialog, '', '', 'JSON (*.json)', options=options)
-        # if file_path:
-        #     self.main_window.credentials_path.setPlainText(file_path)
-        #     _, self.credentials = os.path.split(file_path)
-        #     if self.credentials:
-        #         self.main_window.authorize.setEnabled(True)
-        #     else:
-        #         self.main_window.authorize.setEnabled(False)
+        self.file_path, _ = QFileDialog.getOpenFileName(dialog, '', '/', 'JSON (*.json)', options=options)
 
 
 if __name__ == '__main__':
