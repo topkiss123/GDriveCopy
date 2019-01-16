@@ -28,55 +28,82 @@
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <layout class="QGridLayout" name="gridLayout_2" columnstretch="0,0,0" rowminimumheight="0,0,0" columnminimumwidth="0,0,0">
-      <property name="topMargin">
-       <number>0</number>
-      </property>
-      <property name="horizontalSpacing">
-       <number>-1</number>
-      </property>
-      <item row="0" column="2">
-       <widget class="QPushButton" name="file_browser">
-        <property name="text">
-         <string>Browser</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
        <widget class="QLabel" name="credentials_label">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="text">
          <string>Credentials :</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
+      <item>
+       <widget class="QLabel" name="cred_status_label">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>None.</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="file_browser">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Import</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="change_cred">
+        <property name="text">
+         <string>Delete Credentials</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_3">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <item>
        <widget class="QLabel" name="folder_label">
         <property name="text">
          <string>Folder ID :</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
+      <item>
        <widget class="QPlainTextEdit" name="folder_id">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>25</height>
-         </size>
-        </property>
-        <property name="acceptDrops">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QPlainTextEdit" name="credentials_path">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
           <horstretch>0</horstretch>
@@ -128,7 +155,14 @@
       <item>
        <widget class="QPushButton" name="clear">
         <property name="text">
-         <string>Clear</string>
+         <string>Clear Log</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="change_user">
+        <property name="text">
+         <string>Change Driver</string>
         </property>
        </widget>
       </item>
@@ -162,8 +196,8 @@
    <slot>authorize_clicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>281</x>
-     <y>121</y>
+     <x>202</x>
+     <y>122</y>
     </hint>
     <hint type="destinationlabel">
      <x>156</x>
@@ -178,8 +212,8 @@
    <slot>copy_clicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>391</x>
-     <y>121</y>
+     <x>312</x>
+     <y>122</y>
     </hint>
     <hint type="destinationlabel">
      <x>256</x>
@@ -194,8 +228,8 @@
    <slot>clear_clicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>446</x>
-     <y>106</y>
+     <x>415</x>
+     <y>122</y>
     </hint>
     <hint type="destinationlabel">
      <x>531</x>
@@ -210,12 +244,44 @@
    <slot>browser_clicked()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>584</x>
-     <y>22</y>
+     <x>224</x>
+     <y>43</y>
     </hint>
     <hint type="destinationlabel">
      <x>594</x>
      <y>102</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>change_cred</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>change_cred()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>334</x>
+     <y>24</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>435</x>
+     <y>19</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>change_user</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>change_user()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>483</x>
+     <y>112</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>107</y>
     </hint>
    </hints>
   </connection>
@@ -225,5 +291,7 @@
   <slot>copy_clicked()</slot>
   <slot>clear_clicked()</slot>
   <slot>browser_clicked()</slot>
+  <slot>change_cred()</slot>
+  <slot>change_user()</slot>
  </slots>
 </ui>
