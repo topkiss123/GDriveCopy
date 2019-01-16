@@ -13,7 +13,7 @@ import json
 import sys
 import os
 import configparser
-
+import shutil
 SCOPES = 'https://www.googleapis.com/auth/drive'
 
 
@@ -230,43 +230,60 @@ class App(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
         self.work_thread = WorkThread()
+        self.main_window = Ui_MainWindow()
+        self.config = configparser.ConfigParser()
+        self.drive_service = None
+        self.credentials = 'Cred_GDriveCopy.json'
+        self.setup_thread()
+        self.setup_ui()
+
+    def setup_thread(self):
         self.work_thread.log_signal.connect(self.log_callback)
         self.work_thread.authorize_signal.connect(self.authorize_callback)
-        self.main_window = Ui_MainWindow()
+
+    def setup_ui(self):
         self.main_window.setupUi(self)
-        self.main_window.copy.setEnabled(False)
-        self.main_window.authorize.setEnabled(False)
-        self.drive_service = None
-        self.credentials = None
-        self._file_path = None
-        self.saved_folder = None
-        self.config = configparser.ConfigParser()
+        self.setup_button()
         self.restore_value()
         self.show()
 
-    @property
-    def file_path(self):
-        return self._file_path
+    def setup_button(self):
+        cred_exist = self.check_credentials()
+        service_exist = self.drive_service is not None
+        self.main_window.file_browser.setEnabled(not cred_exist)
+        self.main_window.change_cred.setEnabled(cred_exist)
+        self.main_window.authorize.setEnabled(cred_exist)
+        self.main_window.change_user.setEnabled(cred_exist)
+        self.main_window.copy.setEnabled(service_exist)
+        # self.main_window.clear.setEnabled(service_exist)
 
-    @file_path.setter
-    def file_path(self, path):
-        if path:
-            self._file_path = path
-            self.set_path_config(self._file_path)
-            self.main_window.credentials_path.setPlainText(self._file_path)
-            # _, self.credentials = os.path.split(self._file_path)
-            self.credentials = self._file_path
-            if self.credentials:
-                self.main_window.authorize.setEnabled(True)
-            else:
-                self.main_window.authorize.setEnabled(False)
+    def check_credentials(self):
+        cred_path = os.path.join(os.getcwd(), self.credentials)
+        if os.path.isfile(cred_path):
+            self.main_window.cred_status_label.setText('Success.')
+            return True
+        else:
+            self.main_window.cred_status_label.setText('None.')
+            return False
 
-    def set_path_config(self, path):
-        if 'SETTING' not in self.config:
-            self.config['SETTING'] = {}
-        self.config['SETTING']['Path'] = path
-        with open('GDriveCopy.ini', 'w') as configfile:
-            self.config.write(configfile)
+    def delete_credentials(self):
+        if self.check_credentials():
+            cred_path = os.path.join(os.getcwd(), self.credentials)
+            os.remove(cred_path)
+            self.delete_token()
+            self.log_callback('Delete credentials...Done.')
+        else:
+            self.log_callback('Delete credentials fail...')
+
+    def delete_token(self):
+        token_path = os.path.join(os.getcwd(), 'token.json')
+        if os.path.isfile(token_path):
+            os.remove(token_path)
+            self.log_callback('Change user...Done.')
+        else:
+            self.log_callback('No user...')
+        self.drive_service = None
+        self.setup_button()
 
     def set_folder_config(self, folder):
         if 'SETTING' not in self.config:
@@ -278,7 +295,6 @@ class App(QtWidgets.QMainWindow):
     def restore_value(self):
         self.config.read('GDriveCopy.ini')
         if 'SETTING' in self.config:
-            self.file_path = self.config['SETTING']['Path']
             if 'Folder' in self.config['SETTING']:
                 self.main_window.folder_id.setPlainText(self.config['SETTING']['Folder'])
 
@@ -288,10 +304,7 @@ class App(QtWidgets.QMainWindow):
 
     def authorize_callback(self, service):
         self.drive_service = service
-        if self.drive_service:
-            self.main_window.copy.setEnabled(True)
-        else:
-            self.main_window.copy.setEnabled(False)
+        self.setup_button()
 
     @pyqtSlot()
     def authorize_clicked(self):
@@ -311,7 +324,20 @@ class App(QtWidgets.QMainWindow):
     def browser_clicked(self):
         dialog = QFileDialog()
         options = dialog.Options()
-        self.file_path, _ = QFileDialog.getOpenFileName(dialog, '', '/', 'JSON (*.json)', options=options)
+        file_path, _ = QFileDialog.getOpenFileName(dialog, '', '/', 'JSON (*.json)', options=options)
+        if not self.check_credentials() and file_path:
+            self.log_callback('Import credentials success...')
+            cred_path = os.path.join(os.getcwd(), self.credentials)
+            shutil.copy2(file_path, cred_path)
+            self.setup_button()
+
+    @pyqtSlot()
+    def change_cred(self):
+        self.delete_credentials()
+
+    @pyqtSlot()
+    def change_user(self):
+        self.delete_token()
 
 
 if __name__ == '__main__':
