@@ -7,9 +7,9 @@ verify_ssl = true
 
 [packages]
 google-api-python-client = "*"
-oauth2client = "*"
 pyqt5 = "*"
 pyqt5-sip = "*"
+google-auth-oauthlib = "*"
 
 [requires]
 python_version = "3.7"

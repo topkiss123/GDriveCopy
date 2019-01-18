@@ -1,8 +1,8 @@
 from __future__ import print_function
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from httplib2 import Http
-from oauth2client import file, client, tools
+from google_auth_oauthlib.flow import InstalledAppFlow
+import google.oauth2.credentials
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import QApplication, QFileDialog
 from PyQt5.QtCore import pyqtSlot
@@ -20,22 +20,26 @@ SCOPES = 'https://www.googleapis.com/auth/drive'
 def authorize(credentials, log_callback=None):
     if log_callback:
         log_callback('Start to check authorize...')
-    store = file.Storage('token.json')
-    creds = store.get()
-    if not creds or creds.invalid:
-        try:
-            flow = client.flow_from_clientsecrets(credentials, SCOPES)
-            creds = tools.run_flow(flow, store)
-        except:
-            if log_callback:
-                log_callback('Authorize Fail...')
-    if creds:
-        service = build('drive', 'v3', http=creds.authorize(Http()))
+
+    flow = InstalledAppFlow.from_client_secrets_file(
+        credentials,
+        scopes=[SCOPES])
+    creds = flow.run_local_server()
+    if creds and creds.valid:
+        service = build('drive', 'v3', credentials=creds)
         if service:
             if log_callback:
                 log_callback('Authorize Success...')
+                log_callback('======================')
             return service
-
+        else:
+            if log_callback:
+                log_callback('Authorize Fail...')
+                log_callback('======================')
+    else:
+        if log_callback:
+            log_callback('Credentials invalid...')
+            log_callback('======================')
     return None
 
 
@@ -54,6 +58,7 @@ def start_copy(service, folder_id, log_callback=None):
     copy_files(service=service, to_folder=folder_id, files=clone_folder_files, log_callback=log_callback)
     if log_callback:
         log_callback('Copy done...')
+        log_callback('======================')
 
 
 def create_folder(service, name, log_callback=None):
@@ -66,6 +71,7 @@ def create_folder(service, name, log_callback=None):
     response = service.files().create(body=file_metadata, fields='id').execute()
     if log_callback:
         log_callback('Create folder...Done. Folder ID: {0}'.format(response.get('id', None)))
+        log_callback('======================')
     return response.get('id', None)
 
 
@@ -89,9 +95,11 @@ def get_files(service, folder_id, log_callback=None):
     if not items:
         if log_callback:
             log_callback('Get files...Done. No files found.')
+            log_callback('======================')
     else:
         if log_callback:
             log_callback('Get files...Done.')
+            log_callback('======================')
 
     return items
 
@@ -104,11 +112,13 @@ def get_folder_name(service, folder_id, log_callback=None):
         folder_name = response['name'] + '_byGDriveCopy'
         if log_callback:
             log_callback('Get folder name...Done. Name: {0}'.format(folder_name))
+            log_callback('======================')
         return folder_name
     else:
         folder_name = 'Copy_byGDriveCopy' + time.strftime("%Y-%m-%d", time.localtime())
         if log_callback:
             log_callback('Get folder name...Done. Name: {0}'.format(folder_name))
+            log_callback('======================')
         return folder_name
 
 
@@ -122,15 +132,18 @@ def get_user_folder(service, folder_name, log_callback=None):
     if not result:
         if log_callback:
             log_callback('Get user folder...Done.')
+            log_callback('======================')
         return create_folder(service=service, name=folder_name, log_callback=log_callback)
     else:
         if 'id' in result[0]:
             if log_callback:
                 log_callback('Get user folder...Done.')
+                log_callback('======================')
             return result[0]['id']
         else:
             if log_callback:
                 log_callback('Get user folder...Done.')
+                log_callback('======================')
             return create_folder(service=service, name=folder_name, log_callback=log_callback)
 
 
@@ -166,6 +179,7 @@ def copy_files(service, to_folder, files, log_callback=None):
                 break
     if log_callback:
         log_callback('Copy Files...Done.')
+        log_callback('======================')
 
 
 def check_file(user_files, copy_file, log_callback=None):
@@ -253,9 +267,7 @@ class App(QtWidgets.QMainWindow):
         self.main_window.file_browser.setEnabled(not cred_exist)
         self.main_window.change_cred.setEnabled(cred_exist)
         self.main_window.authorize.setEnabled(cred_exist)
-        self.main_window.change_user.setEnabled(cred_exist)
         self.main_window.copy.setEnabled(service_exist)
-        # self.main_window.clear.setEnabled(service_exist)
 
     def check_credentials(self):
         cred_path = os.path.join(os.getcwd(), self.credentials)
@@ -270,20 +282,11 @@ class App(QtWidgets.QMainWindow):
         if self.check_credentials():
             cred_path = os.path.join(os.getcwd(), self.credentials)
             os.remove(cred_path)
-            self.delete_token()
+            self.drive_service = None
+            self.setup_button()
             self.log_callback('Delete credentials...Done.')
         else:
             self.log_callback('Delete credentials fail...')
-
-    def delete_token(self):
-        token_path = os.path.join(os.getcwd(), 'token.json')
-        if os.path.isfile(token_path):
-            os.remove(token_path)
-            self.log_callback('Change user...Done.')
-        else:
-            self.log_callback('No user...')
-        self.drive_service = None
-        self.setup_button()
 
     def set_folder_config(self, folder):
         if 'SETTING' not in self.config:
@@ -334,10 +337,6 @@ class App(QtWidgets.QMainWindow):
     @pyqtSlot()
     def change_cred(self):
         self.delete_credentials()
-
-    @pyqtSlot()
-    def change_user(self):
-        self.delete_token()
 
 
 if __name__ == '__main__':
