@@ -160,13 +160,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="change_user">
-        <property name="text">
-         <string>Change Driver</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <spacer name="horizontalSpacer_2">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -266,22 +259,6 @@
     <hint type="destinationlabel">
      <x>435</x>
      <y>19</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>change_user</sender>
-   <signal>clicked()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>change_user()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>483</x>
-     <y>112</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>564</x>
-     <y>107</y>
     </hint>
    </hints>
   </connection>

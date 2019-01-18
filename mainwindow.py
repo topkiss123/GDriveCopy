@@ -85,9 +85,6 @@ class Ui_MainWindow(object):
         self.clear = QtWidgets.QPushButton(self.centralwidget)
         self.clear.setObjectName("clear")
         self.horizontalLayout_3.addWidget(self.clear)
-        self.change_user = QtWidgets.QPushButton(self.centralwidget)
-        self.change_user.setObjectName("change_user")
-        self.horizontalLayout_3.addWidget(self.change_user)
         spacerItem2 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_3.addItem(spacerItem2)
         self.verticalLayout.addLayout(self.horizontalLayout_3)
@@ -102,7 +99,6 @@ class Ui_MainWindow(object):
         self.clear.clicked.connect(MainWindow.clear_clicked)
         self.file_browser.clicked.connect(MainWindow.browser_clicked)
         self.change_cred.clicked.connect(MainWindow.change_cred)
-        self.change_user.clicked.connect(MainWindow.change_user)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -116,5 +112,4 @@ class Ui_MainWindow(object):
         self.authorize.setText(_translate("MainWindow", "Authorize"))
         self.copy.setText(_translate("MainWindow", "Start Copy"))
         self.clear.setText(_translate("MainWindow", "Clear Log"))
-        self.change_user.setText(_translate("MainWindow", "Change Driver"))
 
