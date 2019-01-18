@@ -2,7 +2,6 @@ from __future__ import print_function
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from google_auth_oauthlib.flow import InstalledAppFlow
-import google.oauth2.credentials
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import QApplication, QFileDialog
 from PyQt5.QtCore import pyqtSlot
